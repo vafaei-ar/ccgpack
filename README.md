@@ -1,4 +1,4 @@
-CSGAN
+CCGPack
 =======
 
 _Python library for _
@@ -8,4 +8,4 @@ _Python library for _
 
 **Mailing list:** https://
 
-**Citing CSGAN:** 
+**Citing CCGPack:** 
