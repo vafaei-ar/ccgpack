@@ -47,3 +47,22 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 	lastvals = y[-1] + np.abs(y[-half_window-1:-1][::-1] - y[-1])
 	y = np.concatenate((firstvals, y, lastvals))
 	return np.convolve( m[::-1], y, mode='valid')
+
+
+def power_spectrum(m):
+    nside = m.shape[0]
+    
+    mk = np.fft.fft2(mb)
+    kmax = int(1.5*nside)
+    power = np.zeros(kmax)
+    nn = np.zeros(kmax)
+    for i in range(nside):
+        for j in range(nside):
+            k = int(np.sqrt(i**2+j**2))
+            power[k] += np.absolute(mk[i,j])**2
+            nn[k] += 1
+            
+    filt = nn!=0
+    power[filt] = power[filt]/nn[filt]
+    ls = np.arange(kmax)+1
+    return power*(ls*(ls+1))/(2*np.pi)/((nside*np.pi)**2)
