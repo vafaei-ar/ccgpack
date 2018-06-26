@@ -49,10 +49,10 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 	return np.convolve( m[::-1], y, mode='valid')
 
 
-def power_spectrum(m):
+def power_spectrum(m,size):
     nside = m.shape[0]
     
-    mk = np.fft.fft2(mb)
+    mk = np.fft.fft2(m)
     kmax = int(1.5*nside)
     power = np.zeros(kmax)
     nn = np.zeros(kmax)
@@ -64,5 +64,5 @@ def power_spectrum(m):
             
     filt = nn!=0
     power[filt] = power[filt]/nn[filt]
-    ls = np.arange(kmax)+1
-    return power*(ls*(ls+1))/(2*np.pi)/((nside*np.pi)**2)
+    ls = (np.arange(1,kmax)+1)*360./size
+    return ls,power[1:]*(ls*(ls+1))/(2*np.pi)/((nside*np.pi)**2)
