@@ -1,28 +1,86 @@
-#!/usr/bin/env python
-
 import os
 import sys
+import urllib
+import tarfile
+import urllib2
 import shutil
-from setuptools.command.test import test as TestCommand
 from setuptools import find_packages
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+from numpy.distutils.core import setup
+from numpy.distutils.core import Extension
+    
+extensions = Extension(name = 'routines',
+#                 extra_compile_args = ['-O3'],
+                 sources = ['ccgpack/f90_src/routines.f90'],
+                 libraries=['gfortran'] 
+                 )
 
 def remove_dir(dirpath):
 	if os.path.exists(dirpath) and os.path.isdir(dirpath):
 		  shutil.rmtree(dirpath)
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+def internet_check():
+    try:
+        urllib2.urlopen('http://216.58.192.142', timeout=1)
+        return True
+    except urllib2.URLError as err: 
+        return False
 
-from numpy.distutils.core import Extension
-from numpy.distutils.core import setup
+def report(count, blockSize, totalSize):
+  	percent = int(count*blockSize*100/(totalSize))
+  	sys.stdout.write("\r%d%%" % percent + ' complete')
+  	sys.stdout.flush()
 
-extensions = Extension(name = 'routines',
-#                 extra_compile_args = ['-O3'],
-                 sources = ['f90_src/routines.f90'],
-                 libraries=['gfortran'] 
-                 )
+def download(getFile, saveFile=None):
+    assert internet_check(),'Error! check your Internet connection.'
+    if saveFile is None:
+        saveFile = getFile.split('/')[-1]
+    sys.stdout.write('\rFetching ' + saveFile + '...\n')
+    urllib.urlretrieve(getFile, saveFile, reporthook=report)
+    sys.stdout.write("\rDownload complete, saved as %s" % (saveFile) + '\n\n')
+    sys.stdout.flush()
+ 
+def untar(fname):
+    if (fname.endswith("tar.gz")):
+        tar = tarfile.open(fname)
+        tar.extractall()
+        tar.close()
+        print "Extracted in Current Directory"
+    else:
+        print "Not a tar.gz file: '%s '" % sys.argv[0]
+
+os.chdir("ccgpack/cpp_src")
+if not os.path.exists('fftw-2.1.5'):
+    download('http://www.fftw.org/fftw-2.1.5.tar.gz')
+    untar('fftw-2.1.5.tar.gz')
+    os.remove('fftw-2.1.5.tar.gz')
+os.chdir("fftw-2.1.5")
+
+os.system('sh configure --enable-shared')
+os.system('make CFLAGS=-fPIC')
+os.chdir('../')
+
+cmnd = 'g++ -g -Wall -W -w -shared -c -Wno-sign-compare -Wno-unused-label -MMD -fPIC -I./fftw-2.1.5/fftw -O4 -DNDEBUG '
+files = ['fdct_wrapping','ifdct_wrapping','fdct_wrapping_param','function'] 
+
+objts = ''
+for fil in files:
+    print 'Making '+fil+' ...'
+    os.system(cmnd+fil+'.cpp')
+    objts = objts+fil+'.o '
+
+os.system('g++ -shared -Wl,-soname,curvelet.so -o curvelet.so '+objts+' -fPIC -L./fftw-2.1.5/fftw/.libs -lfftw')
+
+for fil in files:
+    os.remove(fil+'.d')
+    os.remove(fil+'.o')
+
+print 'Curvelet library is made.'
+#print os.getcwd()
+os.chdir('../../')
 
 extensions.extra_f77_compile_args = []
 extensions.extra_f90_compile_args = []
@@ -41,6 +99,7 @@ setup(
 	packages=find_packages(PACKAGE_PATH, "ccgpack"),
 	package_dir={'ccgpack': 'ccgpack'},
 	include_package_data=True,
+    package_data={'': ['cpp_src/curvelet.so','cpp_src/fftw-2.1.5/fftw/.libs/*']},
 	install_requires=requires,
 	license='GPLv3',
 	zip_safe=False,
@@ -64,3 +123,5 @@ setup(
 remove_dir('build')
 remove_dir('ccgpack.egg-info')
 remove_dir('dist')
+remove_dir('ccgpack/cpp_src/fftw-2.1.5')
+os.remove('ccgpack/cpp_src/curvelet.so')
