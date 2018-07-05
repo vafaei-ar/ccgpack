@@ -1,4 +1,4 @@
 from curvelet import curvelet
-modules = ['tools','utils','simulators']
-for module in modules:
-	exec('from '+module+' import *')
+#modules = ['tools','utils','simulators']
+#for module in modules:
+#	exec('from '+module+' import *')
