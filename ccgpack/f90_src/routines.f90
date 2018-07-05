@@ -222,21 +222,21 @@ end do !i
 end 
 
 !##############  Cross Correlation  ##############
-subroutine cross_cf(map1,map2,l,n_p,mskv,cor,vcor)
+subroutine cross_cf(map1,map2,l1,l2,n_p,mskv,cor,vcor)
 implicit none
 
-integer, intent(in) :: l
-real*8, intent(in) :: map1(l,l),map2(l,l)
+integer, intent(in) :: l1,l2
+real*8, intent(in) :: map1(l1,l2),map2(l1,l2)
 real*8, intent(in) :: n_p
 real*8, intent(in) :: mskv
-real*8, intent(out) :: cor(0:l),vcor(0:l)
+real*8, intent(out) :: cor(0:max(l1,l2)),vcor(0:max(l1,l2))
 
 integer :: i,i1,j1,i2,j2,k,kp,limit
-integer :: nu(0:l)
+integer :: nu(0:max(l1,l2))
 real*8 :: r1,r2,r3,gam
-real*8 :: c(0:l,int(3*n_p/l))
+real*8 :: c(0:max(l1,l2),int(3*n_p/max(l1,l2)))
 
-limit=int(3*n_p/l)
+limit=int(3*n_p/max(l1,l2))
 cor=0
 vcor=0
 nu=0
@@ -248,20 +248,20 @@ i=i+1
 11 call random_number(r1)
   call random_number(r2)
   call random_number(r3)
-	r1=floor((l*l-1)*r1)
-	r2=floor((l-1)/10.*r2)
-	r3=floor((l-1)/10.*r3)
-  i1=mod(int(r1),l)+1
-  j1=floor(r1/l)+1
+	r1=floor((l1*l2-1)*r1)
+	r2=floor((l1-1)/10.*r2)
+	r3=floor((l2-1)/10.*r3)
+  i1=mod(int(r1),l1)+1
+  j1=floor(r1/l1)+1
   i2=i1+r2+1
   j2=j1+r3+1
 
-	if (i2>l .or. j2>l) goto 11
+	if (i2>l1 .or. j2>l2) goto 11
 
   if(map1(i1,j1)/=mskv.and.map2(i2,j2)/=mskv) then
     gam=sqrt( real( (i1-i2)**2 + (j1-j2)**2 ) )
     k=floor(gam)
-		if (k<=l .and. nu(k)<limit) then
+		if (nu(k)<limit) then
 			nu(k)=nu(k)+1
 			kp=nu(k)
 			c(k,kp)=map1(i1,j1)*map2(i2,j2)
@@ -274,18 +274,18 @@ i=i+1
 
   call random_number(r1)
   call random_number(r2)
-	r1=floor((l*l-1)*r1)
-	r2=floor((l*l-1)*r2)
-  i1=mod(int(r1),l)+1
-  j1=floor(r1/l)+1
-  i2=mod(int(r2),l)+1
-  j2=floor(r2/l)+1
+	r1=floor((l1*l2-1)*r1)
+	r2=floor((l1*l2-1)*r2)
+  i1=mod(int(r1),l1)+1
+  j1=floor(r1/l1)+1
+  i2=mod(int(r2),l1)+1
+  j2=floor(r2/l1)+1
 
   if(map1(i1,j1)/=mskv.and.map2(i2,j2)/=mskv) then
 
     gam=sqrt( real( (i1-i2)**2 + (j1-j2)**2 ) )
     k=floor(gam)
-		if (k<=l .and. nu(k)<limit) then
+		if (k<=max(l1,l2) .and. nu(k)<limit) then
 
 			nu(k)=nu(k)+1
 			kp=nu(k)
@@ -296,7 +296,7 @@ i=i+1
 end do !i
 
 ! mean 
-  do k=0,l
+  do k=0,max(l1,l2)
     kp=nu(k)
     do i=1,kp
       cor(k)=cor(k)+c(k,i)
@@ -305,7 +305,7 @@ end do !i
   end do
 
 ! error 
-  do k=0,l
+  do k=0,max(l1,l2)
     kp=nu(k)
     do i=1,kp
       vcor(k)=vcor(k)+(c(k,i)-cor(k))**2
