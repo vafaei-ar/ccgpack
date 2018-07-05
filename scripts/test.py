@@ -7,7 +7,7 @@ import numpy as np
 from scipy import misc
 m = misc.imread('../images/einstein.jpg')
 
-cm = ccg.curvelet(m,7,4,10,1)
+cm = ccg.curvelet(m,4)
 
 #plt.subplot(1,2,1)
 #plt.imshow(m)
