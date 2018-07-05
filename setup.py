@@ -4,7 +4,6 @@ import urllib
 import tarfile
 import urllib2
 import shutil
-import argparse
 from setuptools import find_packages
 try:
     from setuptools import setup
@@ -12,11 +11,7 @@ except ImportError:
     from distutils.core import setup
 from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
-
-parser = argparse.ArgumentParser(description='Computational Cosmology Package')
-parser.add_argument('--no_curvelet', action="store_true", default=False)
-args = parser.parse_args()
-
+    
 extensions = Extension(name = 'routines',
 #                 extra_compile_args = ['-O3'],
                  sources = ['ccgpack/f90_src/routines.f90'],
@@ -57,36 +52,35 @@ def untar(fname):
     else:
         print "Not a tar.gz file: '%s '" % sys.argv[0]
 
-if not args.no_curvelet:
-    os.chdir("ccgpack/cpp_src")
-    if not os.path.exists('fftw-2.1.5'):
-        download('http://www.fftw.org/fftw-2.1.5.tar.gz')
-        untar('fftw-2.1.5.tar.gz')
-        os.remove('fftw-2.1.5.tar.gz')
-    os.chdir("fftw-2.1.5")
+os.chdir("ccgpack/cpp_src")
+if not os.path.exists('fftw-2.1.5'):
+    download('http://www.fftw.org/fftw-2.1.5.tar.gz')
+    untar('fftw-2.1.5.tar.gz')
+    os.remove('fftw-2.1.5.tar.gz')
+os.chdir("fftw-2.1.5")
 
-    os.system('sh configure --enable-shared')
-    os.system('make CFLAGS=-fPIC')
-    os.chdir('../')
+os.system('sh configure --enable-shared')
+os.system('make CFLAGS=-fPIC')
+os.chdir('../')
 
-    cmnd = 'g++ -g -Wall -W -w -shared -c -Wno-sign-compare -Wno-unused-label -MMD -fPIC -I./fftw-2.1.5/fftw -O4 -DNDEBUG '
-    files = ['fdct_wrapping','ifdct_wrapping','fdct_wrapping_param','function'] 
+cmnd = 'g++ -g -Wall -W -w -shared -c -Wno-sign-compare -Wno-unused-label -MMD -fPIC -I./fftw-2.1.5/fftw -O4 -DNDEBUG '
+files = ['fdct_wrapping','ifdct_wrapping','fdct_wrapping_param','function'] 
 
-    objts = ''
-    for fil in files:
-        print 'Making '+fil+' ...'
-        os.system(cmnd+fil+'.cpp')
-        objts = objts+fil+'.o '
+objts = ''
+for fil in files:
+    print 'Making '+fil+' ...'
+    os.system(cmnd+fil+'.cpp')
+    objts = objts+fil+'.o '
 
-    os.system('g++ -shared -Wl,-soname,curvelet.so -o curvelet.so '+objts+' -fPIC -L./fftw-2.1.5/fftw/.libs -lfftw')
+os.system('g++ -shared -Wl,-soname,curvelet.so -o curvelet.so '+objts+' -fPIC -L./fftw-2.1.5/fftw/.libs -lfftw')
 
-    for fil in files:
-        os.remove(fil+'.d')
-        os.remove(fil+'.o')
+for fil in files:
+    os.remove(fil+'.d')
+    os.remove(fil+'.o')
 
-    print 'Curvelet library is made.'
-    #print os.getcwd()
-    os.chdir('../../')
+print 'Curvelet library is made.'
+#print os.getcwd()
+os.chdir('../../')
 
 extensions.extra_f77_compile_args = []
 extensions.extra_f90_compile_args = []
