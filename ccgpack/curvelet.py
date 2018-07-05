@@ -3,8 +3,8 @@ import numpy as np
 import os
 
 path = '/'.join(os.path.abspath(__file__).split('/')[:-1])
-fftw_path = '/cpp_src/fftw-2.1.5/fftw/.libs/libfftw.so.2'
-crv_path = '/cpp_src/curvelet.so'
+fftw_path = 'cpp_src/fftw-2.1.5/fftw/.libs/libfftw.so.2'
+crv_path = 'cpp_src/curvelet.so'
 
 print os.path.abspath(__file__)
 print '/'.join(os.path.abspath(__file__).split('/')[:-1])
