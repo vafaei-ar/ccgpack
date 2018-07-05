@@ -57,26 +57,26 @@ if not os.path.exists('fftw-2.1.5'):
     download('http://www.fftw.org/fftw-2.1.5.tar.gz')
     untar('fftw-2.1.5.tar.gz')
     os.remove('fftw-2.1.5.tar.gz')
-#os.chdir("fftw-2.1.5")
+os.chdir("fftw-2.1.5")
 
-#os.system('sh configure --enable-shared')
-#os.system('make CFLAGS=-fPIC')
-#os.chdir('../')
+os.system('sh configure --enable-shared')
+os.system('make CFLAGS=-fPIC')
+os.chdir('../')
 
-#cmnd = 'g++ -g -Wall -W -w -shared -c -Wno-sign-compare -Wno-unused-label -MMD -fPIC -I./fftw-2.1.5/fftw -O4 -DNDEBUG '
-#files = ['fdct_wrapping','ifdct_wrapping','fdct_wrapping_param','function'] 
+cmnd = 'g++ -g -Wall -W -w -shared -c -Wno-sign-compare -Wno-unused-label -MMD -fPIC -I./fftw-2.1.5/fftw -O4 -DNDEBUG '
+files = ['fdct_wrapping','ifdct_wrapping','fdct_wrapping_param','function'] 
 
-#objts = ''
-#for fil in files:
-#    print 'Making '+fil+' ...'
-#    os.system(cmnd+fil+'.cpp')
-#    objts = objts+fil+'.o '
+objts = ''
+for fil in files:
+    print 'Making '+fil+' ...'
+    os.system(cmnd+fil+'.cpp')
+    objts = objts+fil+'.o '
 
-#os.system('g++ -shared -Wl,-soname,curvelet.so -o curvelet.so '+objts+' -fPIC -L./fftw-2.1.5/fftw/.libs -lfftw')
+os.system('g++ -shared -Wl,-soname,curvelet.so -o curvelet.so '+objts+' -fPIC -L./fftw-2.1.5/fftw/.libs -lfftw')
 
-#for fil in files:
-#    os.remove(fil+'.d')
-#    os.remove(fil+'.o')
+for fil in files:
+    os.remove(fil+'.d')
+    os.remove(fil+'.o')
 
 print 'Curvelet library is made.'
 #print os.getcwd()
@@ -120,8 +120,8 @@ setup(
 	ext_modules=[extensions]
 )
 
-#remove_dir('build')
-#remove_dir('ccgpack.egg-info')
-#remove_dir('dist')
-#remove_dir('ccgpack/cpp_src/fftw-2.1.5')
-#os.remove('ccgpack/cpp_src/curvelet.so')
+remove_dir('build')
+remove_dir('ccgpack.egg-info')
+remove_dir('dist')
+remove_dir('ccgpack/cpp_src/fftw-2.1.5')
+os.remove('ccgpack/cpp_src/curvelet.so')
