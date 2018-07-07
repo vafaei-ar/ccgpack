@@ -169,18 +169,18 @@ def canny(d,R,meth,edd):
 
 	return d
 
-def badcurvelet(name,c1,c2):
-	np.savetxt('curvelet_input',name)
-	crv_path='/home/gf/work/pakages/curvelet'
-	crn_path=os.getcwd()
-	os.system("cat <<EOF | matlab -nodesktop -nosplash -nodisplay\n"+"mn="+str(c1)+";\n"+"mx="+str(c2)+";\n"+"CC = dlmread('curvelet_input');\n"+"cd "+crv_path+";\n"+"C = fdct_wrapping(CC);\n"+"CC=C;\n"+"for m=mn:mx\n"+"     C=CC;\n"+"%Making other components zero\n"+"    for s=1:length(C)\n"+"      for w=1:length(C{s})\n"+" C{s}{w}=C{s}{w}.*(s==m);\n"+"      end\n"+"    end\n"+"    y=ifdct_wrapping(C);\n"+"    out =['c' int2str(m) '_' 'curvelet_input'];\n"+"    y=real(y);\n"+"    cd "+crn_path+";\n"+"    dlmwrite(out,y,' ');\n"+"    cd "+crv_path+";\n"+"end % first\n"+"exit\n"+"EOF\n")
+#def badcurvelet(name,c1,c2):
+#	np.savetxt('curvelet_input',name)
+#	crv_path='/home/gf/work/pakages/curvelet'
+#	crn_path=os.getcwd()
+#	os.system("cat <<EOF | matlab -nodesktop -nosplash -nodisplay\n"+"mn="+str(c1)+";\n"+"mx="+str(c2)+";\n"+"CC = dlmread('curvelet_input');\n"+"cd "+crv_path+";\n"+"C = fdct_wrapping(CC);\n"+"CC=C;\n"+"for m=mn:mx\n"+"     C=CC;\n"+"%Making other components zero\n"+"    for s=1:length(C)\n"+"      for w=1:length(C{s})\n"+" C{s}{w}=C{s}{w}.*(s==m);\n"+"      end\n"+"    end\n"+"    y=ifdct_wrapping(C);\n"+"    out =['c' int2str(m) '_' 'curvelet_input'];\n"+"    y=real(y);\n"+"    cd "+crn_path+";\n"+"    dlmwrite(out,y,' ');\n"+"    cd "+crv_path+";\n"+"end % first\n"+"exit\n"+"EOF\n")
 
-	print '\n'
-	res = {i:None for i in range(c1,c2)}
-	for i in range(c1,c2+1):
-		res[i]=np.loadtxt('c'+str(i)+'_curvelet_input')
-		os.remove('c'+str(i)+'_curvelet_input')
-	return res
+#	print '\n'
+#	res = {i:None for i in range(c1,c2)}
+#	for i in range(c1,c2+1):
+#		res[i]=np.loadtxt('c'+str(i)+'_curvelet_input')
+#		os.remove('c'+str(i)+'_curvelet_input')
+#	return res
 
 def imshow(ax,strg,tlt,rotation=False):
 	im = ax.imshow(strg, cmap='spectral')

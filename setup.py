@@ -48,9 +48,9 @@ def untar(fname):
         tar = tarfile.open(fname)
         tar.extractall()
         tar.close()
-        print "Extracted in Current Directory"
+        print("Extracted in Current Directory")
     else:
-        print "Not a tar.gz file: '%s '" % sys.argv[0]
+        print('Not a tar.gz file: '+fname)
 
 os.chdir("ccgpack/cpp_src")
 if not os.path.exists('fftw-2.1.5'):
@@ -69,7 +69,7 @@ files = ['fdct_wrapping','ifdct_wrapping','fdct_wrapping_param','function']
 
 objts = ''
 for fil in files:
-    print 'Making '+fil+' ...'
+    print('Making '+fil+' ...')
     os.system(cmnd+fil+'.cpp')
     objts = objts+fil+'.o '
 
@@ -79,7 +79,7 @@ for fil in files:
     os.remove(fil+'.d')
     os.remove(fil+'.o')
 
-print 'Curvelet library is made.'
+print('Curvelet library is made.')
 #print os.getcwd()
 os.chdir('../../')
 
