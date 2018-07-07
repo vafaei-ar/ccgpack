@@ -2,7 +2,6 @@ import os
 import sys
 import urllib
 import tarfile
-import urllib2
 import shutil
 from setuptools import find_packages
 try:
@@ -22,12 +21,19 @@ def remove_dir(dirpath):
 	if os.path.exists(dirpath) and os.path.isdir(dirpath):
 		  shutil.rmtree(dirpath)
 
-def internet_check():
+def connected(host='http://google.com'):
     try:
-        urllib2.urlopen('http://216.58.192.142', timeout=1)
+        urllib.urlopen(host)
         return True
-    except urllib2.URLError as err: 
+    except:
         return False
+
+#def internet_check():
+#    try:
+#        urllib.urlopen('http://216.58.192.142')
+#        return True
+#    except urllib2.URLError as err: 
+#        return False
 
 def report(count, blockSize, totalSize):
   	percent = int(count*blockSize*100/(totalSize))
@@ -35,7 +41,7 @@ def report(count, blockSize, totalSize):
   	sys.stdout.flush()
 
 def download(getFile, saveFile=None):
-    assert internet_check(),'Error! check your Internet connection.'
+    assert connected(),'Error! check your Internet connection.'
     if saveFile is None:
         saveFile = getFile.split('/')[-1]
     sys.stdout.write('\rFetching ' + saveFile + '...\n')
