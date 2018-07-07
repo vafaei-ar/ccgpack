@@ -59,11 +59,12 @@ if not os.path.exists('fftw-2.1.5'):
     os.remove('fftw-2.1.5.tar.gz')
 os.chdir("fftw-2.1.5")
 
-os.system('sh configure --enable-shared')
-os.system('make CFLAGS=-fPIC')
+os.system('./configure --enable-shared CFLAGS=-fPIC CPPFLAGS=-fPIC')
+os.system('make')
 os.chdir('../')
 
-cmnd = 'g++ -g -Wall -W -w -shared -c -Wno-sign-compare -Wno-unused-label -MMD -fPIC -I./fftw-2.1.5/fftw -O4 -DNDEBUG '
+fftw_path = './fftw-2.1.5/fftw'
+cmnd = 'g++ -g -Wall -W -w -shared -c -Wno-sign-compare -Wno-unused-label -MMD -fPIC -I'+fftw_path+' -DNDEBUG '
 files = ['fdct_wrapping','ifdct_wrapping','fdct_wrapping_param','function'] 
 
 objts = ''
@@ -72,7 +73,7 @@ for fil in files:
     os.system(cmnd+fil+'.cpp')
     objts = objts+fil+'.o '
 
-os.system('g++ -shared -Wl,-soname,curvelet.so -o curvelet.so '+objts+' -fPIC -L./fftw-2.1.5/fftw/.libs -lfftw')
+os.system('g++ -shared -Wl,-soname,curvelet.so -o curvelet.so '+objts+' -fPIC -L'+fftw_path+'/.libs -lfftw')
 
 for fil in files:
     os.remove(fil+'.d')
