@@ -1,6 +1,11 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import cv2
 import numpy as np
 import routines as myr
+from skimage import measure
 
 def fortranize(m):
     return np.array(m,order='F')
@@ -26,7 +31,7 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
     try:
           window_size = np.abs(np.int(window_size))
           order = np.abs(np.int(order))
-    except ValueError, msg:
+    except ValueError:
           raise ValueError("window_size and order have to be of type int")
     if window_size % 2 != 1 or window_size < 1:
           raise TypeError("window_size size must be a positive odd number")
@@ -147,4 +152,16 @@ def stat_describe(m,m_max=3):
         m_n = m_n/std
         out.append(m_n)
 
-    return np.array(out)      
+    return np.array(out)    
+    
+def hotspot(data,trsh):
+    hotspots = measure.label(data>trsh)
+    return hotspots.max()
+
+def coldspot(data,trsh):
+    coldspots = measure.label(data<trsh)
+    return coldspots.max()
+    
+def genus(data,trshs):
+    return [hotspot(data,trsh)-coldspot(data,trsh) for trsh in trshs]
+

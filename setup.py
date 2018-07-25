@@ -1,8 +1,13 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import os
 import sys
 import urllib
-import tarfile
 import shutil
+import tarfile
+import requests
 from setuptools import find_packages
 try:
     from setuptools import setup
@@ -21,11 +26,20 @@ def remove_dir(dirpath):
 	if os.path.exists(dirpath) and os.path.isdir(dirpath):
 		  shutil.rmtree(dirpath)
 
-def connected(host='http://google.com'):
+#def connected(host='http://google.com'):
+#    try:
+#        urllib.urlopen(host)
+#        return True
+#    except:
+#        return False
+        
+def connected(url='http://www.google.com/'):
+    timeout=5
     try:
-        urllib.urlopen(host)
+        _ = requests.get(url, timeout=timeout)
         return True
-    except:
+    except requests.ConnectionError:
+        print("Internet connection problem.")
         return False
 
 #def internet_check():
@@ -45,7 +59,10 @@ def download(getFile, saveFile=None):
     if saveFile is None:
         saveFile = getFile.split('/')[-1]
     sys.stdout.write('\rFetching ' + saveFile + '...\n')
-    urllib.urlretrieve(getFile, saveFile, reporthook=report)
+    try:
+        urllib.urlretrieve(getFile, saveFile, reporthook=report)
+    except:
+        urllib.request.urlretrieve(getFile, saveFile, reporthook=report)
     sys.stdout.write("\rDownload complete, saved as %s" % (saveFile) + '\n\n')
     sys.stdout.flush()
  
