@@ -65,7 +65,7 @@ def download(getFile, saveFile=None):
         urllib.request.urlretrieve(getFile, saveFile, reporthook=report)
     sys.stdout.write("\rDownload complete, saved as %s" % (saveFile) + '\n\n')
     sys.stdout.flush()
- 
+     
 def untar(fname):
     if (fname.endswith("tar.gz")):
         tar = tarfile.open(fname)

@@ -18,11 +18,28 @@ def correlarion_fucntion(m1,m2=None,n_p=None,mask_value=np.nan):
         m2 = fortranize(m2)
     if n_p is None:
         n_p = 5*np.prod(m2.shape)
-#    (npixr,mean,var) = myr.make_standard(m1,0)
-#    (npixr,mean,var) = myr.make_standard(m2,0)
+    (npixr,mean,var) = myr.make_standard(m1,0)
+    (npixr,mean,var) = myr.make_standard(m2,0)
     (cor,vcor) = myr.cross_cf(m1,m2,n_p,mask_value)
     return (cor,vcor)
     
+def ppcf(m,th,nfmax,rmax):
+    m = fortranize(m)
+    lg = m.shape[0]
+    (npixr,mean,var) = myr.make_standard(m,0)
+#    m = m-m.mean()
+#    m = m/m.std()
+    (nf1,fl1) = myr.peak_f(m,th,100)
+
+    if nf1>nfmax:
+        rlist = np.random.randint(0,nf1,size=nfmax)
+        nf1 = nfmax
+        fl1 = fl1[:,rlist]
+
+    fl1 = fortranize(fl1[:,:nf1])
+    (ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,5*nf1,1,rmax)
+    return ksi
+
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 
     import numpy as np

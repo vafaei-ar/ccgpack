@@ -1,3 +1,43 @@
+!##############   STANDARD  ##############
+subroutine make_standard(nside,map,mskv,npixr,mean,var)
+
+implicit none
+
+integer, intent (in) :: nside
+Real*8, intent (in) :: mskv
+Real*8, intent (inout) :: map(nside,nside)
+integer, intent (out) :: npixr
+Real*8, intent (out) :: mean,var
+
+integer  i,j
+
+npixr=0
+mean=0
+do i=1,nside
+	do j=1,nside
+	  if (map(i,j)/=mskv) then
+	    mean=mean+map(i,j)
+	    npixr=npixr+1
+	  end if
+	end do
+end do
+
+mean=mean/npixr
+map=map-mean
+
+var=0
+do i=1,nside
+	do j=1,nside
+	  if (map(i,j)/=mskv) then
+	    var=var+map(i,j)**2
+	  end if
+	end do
+end do
+var=sqrt(var/npixr)
+map=map/var
+
+end
+
 !##############   Threshold finder  ##############
 subroutine thsh_f(rows,columns,d,lt,ut,nt,thsh)
 implicit none
@@ -315,4 +355,139 @@ end do !i
 
 end 
 
+!##############   F-F Correlation  ##############
+subroutine   ffcf(ds,sze,fl1,n_pks1,fl2,n_pks2,ksi,vksi,n_sh,mth,lng)
 
+implicit none
+
+integer, intent (in) :: sze,n_pks1,n_pks2,n_sh,mth,lng
+Real*8, intent (in) :: ds
+integer, intent (in) :: fl1(2,n_pks1)
+integer, intent (in) :: fl2(2,n_pks2)
+Real*8, intent (out) :: ksi(0:lng),vksi(0:lng)
+
+Integer  i,j,k
+Real*8  gam,ran1,ran2
+Real*8 DD(0:lng),DR1(0:lng),DR2(0:lng),RR(0:lng)
+Integer x_sh(n_sh),y_sh(n_sh)
+
+ call init_random_seed()
+
+ksi=0; vksi=0
+dd=0; dr1=0; dr2=0; rr=0
+
+do i=1,n_sh
+  call random_number(ran1) 
+  call random_number(ran2)
+  x_sh(i)=int(ran1*dble(sze)) 
+  y_sh(i)=int(ran2*dble(sze))
+end do
+
+do i=1,n_pks1
+  do j=1,n_pks2
+!    if (max(abs(x(i)-x(j)),abs(y(i)-y(j)))>lng )cycle
+    gam=sqrt( real( (fl1(1,i)-fl2(1,j))**2 + (fl1(2,i)-fl2(2,j))**2 ) )
+    k=floor(gam/ds)
+    if (k<=lng) DD(k)=DD(k)+1          
+  enddo
+enddo
+DD=1.*DD/(n_pks1*n_pks2)
+
+do i=1,n_pks1
+  do j=1,n_sh 
+!    if (max(abs(x(i)-x_sh(j)),abs(y(i)-y_sh(j)))>lng )cycle
+    gam=sqrt( real((fl1(1,i)-x_sh(j))**2 + (fl1(2,i)-y_sh(j))**2) )
+    k=floor(gam/ds)
+    if (k<=lng) DR1(k)=DR1(k)+1  
+  end do
+end do
+DR1=1.*DR1/(n_pks1*n_sh)
+
+do i=1,n_pks2
+  do j=1,n_sh 
+!    if (max(abs(x(i)-x_sh(j)),abs(y(i)-y_sh(j)))>lng )cycle
+    gam=sqrt( real((fl2(1,i)-x_sh(j))**2 + (fl2(2,i)-y_sh(j))**2) )
+    k=floor(gam/ds)
+    if (k<=lng) DR2(k)=DR2(k)+1  
+  end do
+end do
+DR2=1.*DR2/(n_pks2*n_sh)
+
+if (mth==2 .or. mth==3) then
+print*, "This part is out of service for now!"
+!do i=1,n_sh 
+!  do j=i+1,n_sh 
+!    gam=sqrt( real( (x_sh(i)-x_sh(j))**2 + (y_sh(i)-y_sh(j))**2 ) )
+!    k=floor(gam/ds)
+!    if (k<=lng) RR(k)=RR(k)+1  
+!  end do
+!end do
+end if
+
+do k=1, lng 
+  if(DR1(k)+DR2(k).ne.0) then
+if (mth==1) ksi(k)=2.*DD(k)/(DR1(k)+DR2(k))-1
+!if (mth==2) ksi(k)=4.*(DD(k)*RR(k)*1./DR(k)**2)-1.
+!if (mth==3) ksi(k)=(DD(k)*1./RR(k))*(n_sh*1./n_pks)**2-2*(DR(k)*1./RR(k))*(n_sh*1./n_pks) + 3.
+vksi(k)=0
+!    vksi(k)=2.*(n_sh*1./n_pks)*(  ((1.-2*DD(k)/(n_pks*(n_pks-1)))/DR(k))**2 + &
+!	& (DD(k)*(1.-2*DR(k)/n_sh*(n_sh-1))/DR(k)**2)**2  )
+  end if
+end do
+
+end
+
+
+
+!##############   RANDOM SEED GERERATOR  ##############
+subroutine init_random_seed()
+  use iso_fortran_env, only: int64
+implicit none
+  integer, allocatable :: seed(:)
+  integer :: i, n, un, istat, dt(8), pid
+  integer(int64) :: t
+
+  call random_seed(size = n)
+  allocate(seed(n))
+  ! First try if the OS provides a random number generator
+  open(newunit=un, file="/dev/urandom", access="stream", &
+       form="unformatted", action="read", status="old", iostat=istat)
+  if (istat == 0) then
+     read(un) seed
+     close(un)
+  else
+     ! Fallback to XOR:ing the current time and pid. The PID is
+     ! useful in case one launches multiple instances of the same
+     ! program in parallel.
+     call system_clock(t)
+     if (t == 0) then
+        call date_and_time(values=dt)
+        t = (dt(1) - 1970) * 365_int64 * 24 * 60 * 60 * 1000 &
+   + dt(2) * 31_int64 * 24 * 60 * 60 * 1000 &
+   + dt(3) * 24_int64 * 60 * 60 * 1000 &
+   + dt(5) * 60 * 60 * 1000 &
+   + dt(6) * 60 * 1000 + dt(7) * 1000 &
+   + dt(8)
+     end if
+     pid = getpid()
+     t = ieor(t, int(pid, kind(t)))
+     do i = 1, n
+        seed(i) = lcg(t)
+     end do
+  end if
+  call random_seed(put=seed)
+contains
+  ! This simple PRNG might not be good enough for Real*8 work, but is
+  ! sufficient for seeding a better PRNG.
+  function lcg(s)
+    integer :: lcg
+    integer(int64) :: s
+    if (s == 0) then
+       s = 104729
+    else
+       s = mod(s, 4294967296_int64)
+    end if
+    s = mod(s * 279470273_int64, 4294967291_int64)
+    lcg = int(mod(s, int(huge(0), int64)), kind(0))
+  end function lcg
+end subroutine init_random_seed
