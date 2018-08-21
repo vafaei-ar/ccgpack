@@ -16,11 +16,17 @@ except ImportError:
 from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
     
-extensions = Extension(name = 'routines',
-#                 extra_compile_args = ['-O3'],
+extensions = [Extension(name = 'routines',
+                 extra_compile_args = ['-O3'],
                  sources = ['ccgpack/f90_src/routines.f90'],
                  libraries=['gfortran'] 
-                 )
+                 )]
+
+extensions.append(Extension(name = 'sky2face',
+                 extra_compile_args = ['-O3'],
+                 sources = ['ccgpack/f90_src/sky2face.f90'],
+                 libraries=['gfortran'] 
+                 ))
 
 def remove_dir(dirpath):
 	if os.path.exists(dirpath) and os.path.isdir(dirpath):
@@ -106,8 +112,8 @@ print('Curvelet library is made.')
 #print os.getcwd()
 os.chdir('../../')
 
-extensions.extra_f77_compile_args = []
-extensions.extra_f90_compile_args = []
+#extensions.extra_f77_compile_args = []
+#extensions.extra_f90_compile_args = []
 
 requires = [] #during runtime
 tests_require=['pytest>=2.3'] #for testing
@@ -141,7 +147,7 @@ setup(
 		  'Programming Language :: Python :: 3.3',
 		  'Programming Language :: Fortran',
 	],
-	ext_modules=[extensions]
+	ext_modules=extensions
 )
 
 remove_dir('build')
