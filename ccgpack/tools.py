@@ -44,7 +44,7 @@ def ppcf(m,th,nfmax,rmax):
     fl1 = fortranize(fl1[:,:nf1])
     (ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,5*nf1,1,rmax)
     return ksi
-
+    
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 
     import numpy as np

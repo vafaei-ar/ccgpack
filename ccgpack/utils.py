@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 import math
 import pprint
 import random
@@ -54,3 +55,6 @@ def rank_table(mtx,xlabels,ylabels,plot_name=None,title=None):
     if plot_name is not None :
         plt.savefig(plot_name+'.jpg',dpi=150,bbox_inches='tight')
 
+def pop_percent(i,ntot):
+    sys.stdout.write("\r{:3.1f}%".format(100.*(i+1)/ntot)+ ' complete')
+    sys.stdout.flush()
