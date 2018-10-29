@@ -187,3 +187,47 @@ def coldspot(data,trsh):
 def genus(data,trshs):
     return [hotspot(data,trsh)-coldspot(data,trsh) for trsh in trshs]
 
+def deform(image,df,inverse=False,verbose=True):
+    
+    cc = 1
+    if inverse:
+        cc = -1
+    img_output = np.zeros(image.shape, dtype=image.dtype)
+    f1, f2 = df.shape
+    
+    if image.ndim==2:
+        rows, cols = image.shape
+        if (f1==rows+1) & (f2==cols+1):
+            pass
+        else:
+            if verbose:
+                print ('Warning, deformation field dimensions are not compatible, it will be cropped!')
+            df = df[:rows+1,:cols+1]
+        mx = np.diff(df,1,axis=0)[:,:cols]
+        my = np.diff(df,1,axis=1)[:rows,:]
+        for i in range(rows):
+            for j in range(cols):
+                offset_x = int(mx[i,j])
+                offset_y = int(my[i,j])
+                img_output[i,j] = image[(i-cc*offset_x)%rows,(j-cc*offset_y)%cols]
+                
+    elif image.ndim==3:
+        rows, cols, _ = image.shape
+        if (f1==rows+1) & (f2==cols+1):
+            pass
+        else:
+            if verbose:
+                print ('Warning, deformation field dimensions are not compatible, it will be cropped!')
+            df = df[:rows+1,:cols+1]
+        mx = np.diff(df,1,axis=0)[:,:cols]
+        my = np.diff(df,1,axis=1)[:rows,:]
+        for i in range(rows):
+            for j in range(cols):
+                offset_x = int(mx[i,j])
+                offset_y = int(my[i,j])
+                img_output[i,j,:] = image[(i-cc*offset_x)%rows,(j-cc*offset_y)%cols,:]
+    else:
+        print('It is not an image!')
+        return
+                           
+    return img_output,mx,my
