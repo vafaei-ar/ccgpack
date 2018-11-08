@@ -6,11 +6,25 @@ import cv2
 import numpy as np
 import routines as myr
 from skimage import measure
-from sky2face import sky_to_patch
+from sky2face import sky_to_patch,patch_to_sky
 
 def sky2face(m):
-    lp = int(np.sqrt(m.shape[0]/12))
-    return sky_to_patch(m,1,12, lp)
+    print('sky2face does not exist any more, please use sky2patch.')
+    return None
+
+def sky2patch(m,npatch=1):
+    numpa = 12*npatch**2
+    lp = int(np.sqrt(m.shape[0]/12)/npatch)
+    return sky_to_patch(m,npatch,numpa, lp)
+    
+def patch2sky(patch):
+    npix = patch.size
+    npatch = int(np.sqrt(patch.shape[0]/12))
+    return patch_to_sky(patch,npix,npatch)
+
+#def sky2face(m):
+#    lp = int(np.sqrt(m.shape[0]/12))
+#    return sky_to_patch(m,1,12, lp)
 
 def fortranize(m):
     return np.array(m,order='F')
