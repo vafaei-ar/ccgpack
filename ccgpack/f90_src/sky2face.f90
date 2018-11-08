@@ -99,7 +99,6 @@ do nface=1,12
     do j=1,lp
       do i=1,lp
         face(i+int(lp*floor((np-0.05)/di)),j+int(lp*(mod(np-1.,di)))) = patch(pa*(nface-1)+np,i,j)
-        print *, patch(pa*(nface-1)+np,i,j)
       end do
     end do 
   end do
