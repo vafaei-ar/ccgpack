@@ -22,10 +22,6 @@ def patch2sky(patch):
     npatch = int(np.sqrt(patch.shape[0]/12))
     return patch_to_sky(patch,npix,npatch)
 
-#def sky2face(m):
-#    lp = int(np.sqrt(m.shape[0]/12))
-#    return sky_to_patch(m,1,12, lp)
-
 def fortranize(m):
     return np.array(m,order='F')
        
