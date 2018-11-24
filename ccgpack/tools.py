@@ -26,13 +26,15 @@ def fortranize(m):
     return np.array(m,order='F')
        
 def correlarion_fucntion(m1,m2=None,n_p=None,mask_value=np.nan):
-    m1 = fortranize(m1)
+    m1 = fortranize(m1.astype(np.float64))
     if m2 is None:
         m2 = m1
     else:
-        m2 = fortranize(m2)
+        m2 = fortranize(m2.astype(np.float64))
+        
+    assert m1.shape==m2.shape,'Both data sets have to be in same shape.'
     if n_p is None:
-        n_p = 5*np.prod(m2.shape)
+        n_p = 5*m2.size
     (npixr,mean,var) = myr.make_standard(m1,0)
     (npixr,mean,var) = myr.make_standard(m2,0)
     (cor,vcor) = myr.cross_cf(m1,m2,n_p,mask_value)
@@ -54,6 +56,11 @@ def ppcf(m,th,nfmax,rmax):
     fl1 = fortranize(fl1[:,:nf1])
     (ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,5*nf1,1,rmax)
     return ksi
+    
+#def ffcf(fl1,fl2,lg,1,rmax):
+#    fl1 = fortranize(fl1[:,:nf1])
+#    (ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,5*nf1,1,rmax)
+#    return ksi
     
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 
@@ -162,12 +169,11 @@ def filters(d,edd_method='sch',R=0,smoothing='g'):
     return d
         
         
-def pdf(m,n_c=20):
+def pdf(m,bins=20):
     m = np.array(m)
-    n, bin_edges = np.histogram(m.flatten('F'), n_c)
-    dx = (bins[1]-bins[0])/2
-    bins = np.array([bin_edges[i]+bin_edges[i+1] for i in range(n_c)])
-    return bins,n 
+    hist, bin_edges = np.histogram(m, bins)
+    bins = 0.5*(bin_edges[1:]+bin_edges[:1])
+    return bins,hist
     
 def stat_describe(m,m_max=3):
     mean = np.mean(m)
@@ -194,7 +200,10 @@ def coldspot(data,trsh):
     coldspots = measure.label(data<trsh)
     return coldspots.max()
     
-def genus(data,trshs):
+def genus(data,trshs,standard=False):
+    if standard:
+        data = data-data.mean()
+        data = data/data.std()        
     return [hotspot(data,trsh)-coldspot(data,trsh) for trsh in trshs]
 
 def deform(image,df,inverse=False,verbose=True):
