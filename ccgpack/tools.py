@@ -250,3 +250,30 @@ def deform(image,df,inverse=False,verbose=True):
         return
                            
     return img_output,mx,my
+    
+def contour_carachters(data,nu):    
+    contour = measure.find_contours(data,nu)   
+    num_c = len(contour)
+    perimeter = []
+    area = []
+    radius = []
+    for nc in range(num_c):
+        n_points = contour[nc].shape[0]
+        x = contour[nc][:,0]
+        y = contour[nc][:,1]
+        s_nc = 0
+        x_c = np.mean(x)
+        y_c = np.mean(y)
+        r_nc=0
+        for i in range(n_points):
+            s_nc += np.sqrt((x[i-1]-x[i])**2+(y[i-1]-y[i])**2)
+            r_nc += (((x[i]-x_c)**2)+((y_c-y[i])**2))
+        A=np.abs(0.5*np.sum(y[:-1]*np.diff(x) - x[:-1]*np.diff(y)))
+        perimeter.append(s_nc)
+        area.append(A)
+        radius.append(np.sqrt(r_nc/n_points))
+    perimeter=np.asarray(perimeter)
+    area=np.asarray(area)
+    radius=np.asarray(radius)    
+    return [contour,perimeter,area,radius]
+
