@@ -251,7 +251,9 @@ def deform(image,df,inverse=False,verbose=True):
                            
     return img_output,mx,my
     
-def contour_carachters(data,nu):    
+    
+#contour function and exponent added by mehdi
+def carachters(data,nu):    
     contour = measure.find_contours(data,nu)   
     num_c = len(contour)
     perimeter = []
@@ -277,3 +279,357 @@ def contour_carachters(data,nu):
     radius=np.asarray(radius)    
     return [contour,perimeter,area,radius]
 
+def pdf_c(d,R):
+    l_d=len(d)
+    R=R-1
+    min_d=np.min(d[:,0])
+    d[:,0]-=min_d
+    d_x=np.max(d[:,0])/R
+    n=np.zeros(R+1)
+    p=np.zeros(R+1)
+    for i in range(l_d):
+        k=int(d[i,0]/d_x)
+        n[k]=n[k]+1
+        p[k]=p[k]+d[i,1]        
+    len_p=len(p[n>0])
+    a=np.linspace(0.5,len(p)-1.5,len(p))
+    a*=d_x
+    a+=min_d
+    out=np.zeros((len_p,3))
+    out[:,0]=a[n>0]
+    out[:,1]=n[n>0]
+    out[:,2]=p[n>0]/n[n>0]
+    return(out)
+
+def D_f(data,th,R,r1,r2,plot):
+    [contour,perimeter,area,radius] = carachters(data,th)
+    zz=np.zeros((len(perimeter),2))
+    k=0
+    for i in range(len(radius)):
+        if radius[i]>=r1 and radius[i]<=r2:
+            zz[k,1]=perimeter[i]
+            zz[k,0]=radius[i]
+            k+=1
+    zz.resize(k,2)
+    ee=pdf_c(zz,R)
+    new_c=[]
+    for i in range(len(ee[:,1])):
+        if ee[i,1]>0:
+            new_c.append([ee[i,0],ee[i,2]])
+    eee=np.array(new_c)
+    x=np.log10(eee[:,0])
+    y=np.log10(eee[:,1])
+    fi2 = np.polyfit(x,y,1)
+    if plot==1:
+        print('D_f = ',fi2[0])
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel('R')
+        plt.ylabel('<s>')    
+        plt.scatter(10**x,10**y)
+        plt.plot(10**x,10**(x*(fi2[0])+fi2[1]),'r--')
+        plt.show()
+    return fi2[0]
+
+def etta(data,th,p_min,p_max,R,s_min,s_max,plot):
+    [contour,perimeter1,area1,radius] = carachters(data,th)
+    perimeter = perimeter1[perimeter1<p_max]
+    per_filt = perimeter[perimeter>p_min]
+    R=int((np.max(per_filt)-p_min)/((s_max-s_min)/R))
+    P_s, bin_edges = np.histogram(per_filt,bins=R)
+    P_s=P_s/P_s.sum()
+    s=[]
+    for i in range(R):    
+        s.append(0.5*(bin_edges[i]+bin_edges[i+1]))
+    c_out=[]
+    for i in range(len(P_s)):
+        if P_s[i]>0:   
+            c_out.append([s[i],P_s[i]])
+    c_out=np.array(c_out)
+    s=c_out[:,0]
+    P_s=c_out[:,1]
+    for i in range(len(s)):
+        if s[i]>s_min:
+            s_min = i
+            break
+    for i in range(len(s)):
+        if s[i]>s_max:
+            s_max = i-1
+            break      
+    P_s=P_s[s_min:s_max]
+    s=s[s_min:s_max]
+    fit=np.polyfit(np.log(s),np.log(P_s),1)
+    etta = (fit[0]*-1)+1
+    if plot==1:
+        print('etta = ',etta)
+        plt.scatter(s,P_s)
+        plt.xlabel('S')
+        plt.ylabel('P(S)')
+        plt.show()
+        ys=np.exp((np.log(s)*fit[0])+fit[1])
+        plt.loglog(s,P_s,'o')
+        plt.loglog(s,ys,label='slope='+str(fit[0]))
+        plt.xlabel('S')
+        plt.ylabel('P(S) (log scale)')
+        plt.show()
+        plt.plot(s,P_s*(s**(etta-1)),'.')
+        plt.xlabel('S')
+        plt.ylabel('P(S)*s**(etta-1)')
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.ylim(0.001,1000)
+        plt.show()
+    return etta
+
+def kessi(data,th,area_min,area_max,R,A_min,A_max,plot):
+    [contour,perimeter1,area1,radius] = carachters(data,th)
+    arear = area1[area1<area_max]
+    per_filt = arear[arear>area_min]
+    R=int((np.max(per_filt)-area_min)/((A_max-A_min)/R))
+    P_A, bin_edges = np.histogram(per_filt,bins=R)
+    P_A=P_A/P_A.sum()
+    A=[]
+    for i in range(R):    
+        A.append(0.5*(bin_edges[i]+bin_edges[i+1]))
+    c_out=[]
+    for i in range(len(P_A)):
+        if P_A[i]>0:   
+            c_out.append([A[i],P_A[i]])
+    c_out=np.array(c_out)
+    A=c_out[:,0]
+    P_A=c_out[:,1]
+    for i in range(len(A)):
+        if A[i]>A_min:
+            A_min = i
+            break
+    for i in range(len(A)):
+        if A[i]>A_max:
+            A_max = i-1
+            break
+    P_A=P_A[A_min:A_max]
+    A=A[A_min:A_max]
+    fit=np.polyfit(np.log(A),np.log(P_A),1)
+    kessi = (fit[0]*-2)
+    if plot==1:
+        print('kessi = ',kessi)
+        plt.scatter(A,P_A)
+        plt.xlabel('A')
+        plt.ylabel('P(A)')
+        plt.show()
+        yA=np.exp((np.log(A)*fit[0])+fit[1])
+        plt.loglog(A,P_A,'o')
+        plt.loglog(A,yA,label='slope='+str(fit[0]))
+        plt.xlabel('A')
+        plt.ylabel('P(A) (log scale)')
+        plt.show()
+        plt.plot(A,P_A*(A**(kessi/2)),'.')
+        plt.xlabel('A')
+        plt.ylabel('P(A)*s**(kessi/2)')
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.ylim(0.001,1000)
+        plt.show()
+    return kessi 
+
+#for row axis=0 - n is number of row - clean coloumn with zero in n_th row 
+def sorter(data,axis,n,clean):
+    if axis==0:
+        data=data[:, data[n].argsort()]
+        if clean==1:
+            data=data[:,data[n,:]!=0]
+    if axis==1:
+        data=data[data[:,n].argsort(),:]
+        if clean==1:
+            data=data[data[:,n]!=0,:]
+    return data
+def Gr(data,th,points):
+    import random
+    data -= data.mean()
+    data /= data.std()
+    contour = measure.find_contours(data,th)
+    l_c=len(contour)    
+    l=[]
+    for i in range(len(contour)):
+        l.append([i,len(contour[i])])
+    l=np.array(l)
+    n_co=sorter(l,1,1,0)[:,0]
+    nor=0   
+    print('find ',l_c ,'conours and select Maximum',points,'points of any contour (;')
+    per=0
+    o=[]
+    delta=1
+    for k in (n_co):
+        k=int(k)
+        print("Progress {:2.1%}".format( (nor+1) / l_c), end="\r")
+        R_max=0
+        c=np.zeros(1)
+        n=0
+        len_contour=int(len(contour[k]))           
+        n_c1=random.sample(range(len_contour),min(len_contour,points)) 
+        nor+=1
+        d=contour[k][[n_c1]]
+        len_d=int(len(d))
+        for i in range(len_d):
+            for j in range(i+1,len_d):
+                x=d[i,0]-d[j,0]
+                y=d[i,1]-d[j,1]
+                r=int(np.sqrt((x**2)+(y**2))/delta)
+                R_max=max(r,R_max)
+                c.resize(R_max+1)
+                c[r]=c[r]+1
+                n+=1    
+        C=c/n
+        G=[]
+        for i in range(len(C)):
+            if C[i]>0:
+                G.append([i,C[i]])
+        o.append(np.array(G))
+    m=0
+    for i in range(len(o)):
+        if len(o[i])>0:           
+            m=max(m,max(o[i][:,0]))    
+    m=int(m)
+    Cc=np.zeros((m+1,3))
+    Cc[:,0]=np.arange(0,m+1,1)
+    for i in range(len(o)):
+        for j in range(len(o[i])):
+            Cc[int(o[i][j,0]),1]+=o[i][j,1]
+            Cc[int(o[i][j,0]),2]+=1
+    Cc=Cc[Cc[:,2]!=0]       
+    Cc[:,1]/=Cc[:,2]
+    Cc=Cc[:,:2]
+    Cc[:,1]/=Cc[:,1].sum()
+    return Cc
+
+def xl(data,th,points,r_min,r_max,plot):
+    rr2=Gr(data,th,points)
+#     rr2[:,1]=g[:,1]
+    x=np.log(rr2[r_min:r_max,0])
+    y=np.log(rr2[r_min:r_max,1])
+    fit=np.polyfit(x,y,1)
+    if plot==1:
+        print('-2xl = ',fit[0])
+        r=rr2[10:,0]
+        gg=rr2[10:,1]
+        #plt.ylim(-100,10)
+        grr=gg*(r**(-1*fit[0]))
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel('r')
+        plt.ylabel('G(r)*r**(2xl)')
+        plt.plot(r,grr,'r--')
+    return (fit[0]/(-2))
+
+#0_1 boxing
+def zobox(data,th):
+    [contour,perimeter,area,radius] = carachters(data,th)
+    row=data.shape[0]
+    col=data.shape[1]
+    pos_con=np.zeros((row,col))
+    for i in range(len(contour)):
+        for j in range(len(contour[i])):
+            pos_con[int(contour[i][j,0]),int(contour[i][j,1])]+=1
+    return pos_con
+
+def N_l(data,th):
+    pos_con=zobox(data,th)
+    len_d=len(data)
+    N=np.zeros((int(np.log2(len_d))+1,2))
+    for i in range(int(np.log2(len_d))+1):    
+        nn=2**i
+        len_d=len(data)
+        sl=int(len_d/nn)
+        N[i,0]=1/nn
+        for j in range(nn):  
+            for k in range(nn):
+                if np.mean(pos_con[j*sl:(j+1)*sl,k*sl:(k+1)*sl])>0:
+                    N[i,1]+=1
+    return N
+def d_d(data,th,plot):
+    N=N_l(data,th)
+    x=np.log(N[1:,0])
+    y=np.log(N[1:,1])    
+    fi2 = np.polyfit(x,y,1)
+    if plot==1:
+        print('d = ',fi2[0]*-1)
+        plt.plot(x,y)
+        plt.plot(x,x*(fi2[0])+fi2[1],'r--')
+        plt.xlabel('log(l)')
+        plt.ylabel('log N(l)')
+        plt.show()
+    return (fi2[0]*-1)
+
+def p_l(data,th):
+    pos_con=zobox(data,th)
+    len_d=len(data)
+    #N=np.zeros((int(np.log2(len_d))+1,2))
+    N=[]
+    for i in range(int(np.log2(len_d))+1):    
+        nn=2**i
+        len_d=len(data)
+        sl=int(len_d/nn)        
+        x=0        
+        zp=0
+        p=np.zeros((nn,nn))
+        for j in range(nn):
+            y=0            
+            for k in range(nn):                
+                s=pos_con[j*sl:(j+1)*sl,k*sl:(k+1)*sl].sum()
+                zp=zp+s
+                p[x,y]=s
+                y=y+1
+            x=x+1
+        u=[]
+        u.append([1/nn,p/zp])
+        N.append(u)
+    return N
+# example output : p[3][0][1].sum() is 1
+
+#D_q
+def D_q(data,th,q1,q2,qq):
+    k=0
+    N=p_l(data,th)
+    z_q=np.zeros((qq,len(N)-1,2))
+    D_q=np.zeros((qq,len(N)-1,2)) 
+    for q in np.linspace(q1,q2,qq):
+        if q<=0:
+            print(-1)
+            for i in range(1,len(N)):
+                yy=0
+                for z in range(len(N[i][0][1])):
+                    for e in range(len(N[i][0][1])):
+                        if N[i][0][1][z,e]>0:
+                            yy=yy+(N[i][0][1][z,e])**q 
+                z_q[k,i-1,1]=yy       
+                l=N[i][0][0]
+                D_q[k,i-1,1]=(1/(q-1))*np.log(z_q[k,i-1,1])/np.log(l)
+                z_q[k,i-1,0]=l
+                D_q[k,i-1,0]=l
+
+        if q==1:
+            print(1)
+            for i in range(1,len(N)):
+                l=N[i][0][0]
+                yy=0
+                for z in range(len(N[i][0][1])):
+                    for e in range(len(N[i][0][1])):
+                        if N[i][0][1][z,e]>0:
+                            yy=yy+(N[i][0][1][z,e])*np.log(N[i][0][1][z,e])  
+                D_q[k,i-1,1]=yy/np.log(l)
+                z_q[k,i-1,0]=l
+                D_q[k,i-1,0]=l            
+        if q>0 and q!=1:
+            print(11)
+            for i in range(1,len(N)):
+                yy=0
+                for z in range(len(N[i][0][1])):
+                    for e in range(len(N[i][0][1])):
+                        yy=yy+(N[i][0][1][z,e])**q 
+                        #print(N[i][0][1][z,e])
+                z_q[k,i-1,1]=yy       
+                l=N[i][0][0]
+                D_q[k,i-1,1]=(1/(q-1))*np.log(z_q[k,i-1,1])/np.log(l)
+                z_q[k,i-1,0]=l
+                D_q[k,i-1,0]=l
+        k=k+1
+    return D_q
