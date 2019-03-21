@@ -8,6 +8,18 @@ import routines as myr
 from skimage import measure
 from sky2face import sky_to_patch,patch_to_sky
 
+def cov_mat(data):
+    if data.shape[0]<2 or data.max()==data.min():
+        return np.eye(data.shape[1])
+    c_m = np.mean(data,axis=0)
+    n_obs = data.shape[0]
+    n_data = data.shape[1]
+    Cov = np.zeros((n_data,n_data))
+    for i in range(n_obs):
+          vec = (data[i,:]-c_m).reshape(n_data,1)
+          Cov += np.matmul(vec,vec.T)
+    return Cov/n_obs
+    
 def sky2face(m):
     print('sky2face does not exist any more, please use sky2patch.')
     return None
