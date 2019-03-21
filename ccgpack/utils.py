@@ -28,12 +28,29 @@ def connected(url='http://www.google.com/'):
 #    except urllib2.URLError as err: 
 #        return False
 
-def report(count, blockSize, totalSize):
-  	percent = int(count*blockSize*100/(totalSize))
-  	sys.stdout.write("\r%d%%" % percent + ' complete')
-  	sys.stdout.flush()
+#def report(count, blockSize, totalSize):
+#  	percent = int(count*blockSize*100/(totalSize))
+#  	sys.stdout.write("\r%d%%" % percent + ' complete')
+#  	sys.stdout.flush()
 
-def download(getFile, saveFile=None):
+#def download(getFile, saveFile=None):
+#    assert connected(),'Error! check your Internet connection.'
+#    if saveFile is None:
+#        saveFile = getFile.split('/')[-1]
+#    sys.stdout.write('\rFetching ' + saveFile + '...\n')
+#    try:
+#        urllib.urlretrieve(getFile, saveFile, reporthook=report)
+#    except:
+#        urllib.request.urlretrieve(getFile, saveFile, reporthook=report)
+#    sys.stdout.write("\rDownload complete, saved as %s" % (saveFile) + '\n\n')
+#    sys.stdout.flush()
+    
+def download(getFile, saveFile, report=None):
+    if report is None:
+        def report(count, blockSize, totalSize):
+          	percent = int(count*blockSize*totalSize)
+          	sys.stdout.write("\r%d%%" % percent + ' complete')
+          	sys.stdout.flush()
     assert connected(),'Error! check your Internet connection.'
     if saveFile is None:
         saveFile = getFile.split('/')[-1]
@@ -57,7 +74,10 @@ def ch_mkdir(directory):
         null.		
     """
     if not os.path.exists(directory):
-          os.makedirs(directory)
+        try:
+            os.makedirs(directory)
+        except:
+            print('could not make the directory!')
           
 def rank_table(mtx,xlabels,ylabels,plot_name=None,title=None):
     
