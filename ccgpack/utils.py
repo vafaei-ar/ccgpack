@@ -55,10 +55,12 @@ def download(getFile, saveFile, report=None):
     if saveFile is None:
         saveFile = getFile.split('/')[-1]
     sys.stdout.write('\rFetching ' + saveFile + '...\n')
-    try:
+    if hasattr(urllib, 'urlretrieve'):
         urllib.urlretrieve(getFile, saveFile, reporthook=report)
-    except:
+    elif hasattr(urllib, 'request'):
         urllib.request.urlretrieve(getFile, saveFile, reporthook=report)
+    else:
+        print('SOmething is wrong with urllib!')
     sys.stdout.write("\rDownload complete, saved as %s" % (saveFile) + '\n\n')
     sys.stdout.flush()
     
