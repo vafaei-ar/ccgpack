@@ -515,7 +515,6 @@ def Gr(data,th,points):
 
 def xl(data,th,points,r_min,r_max,plot):
     rr2=Gr(data,th,points)
-#     rr2[:,1]=g[:,1]
     x=np.log(rr2[r_min:r_max,0])
     y=np.log(rr2[r_min:r_max,1])
     fit=np.polyfit(x,y,1)
@@ -532,7 +531,6 @@ def xl(data,th,points,r_min,r_max,plot):
         plt.plot(r,grr,'r--')
     return (fit[0]/(-2))
 
-#0_1 boxing
 def zobox(data,th):
     [contour,perimeter,area,radius] = carachters(data,th)
     row=data.shape[0]
@@ -597,7 +595,7 @@ def p_l(data,th):
     return N
 # example output : p[3][0][1].sum() is 1
 
-#D_q
+#D_q for q
 def D_q(data,th,q1,q2,qq):
     k=0
     N=p_l(data,th)
