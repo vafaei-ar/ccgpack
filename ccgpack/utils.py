@@ -113,5 +113,10 @@ def rank_table(mtx,xlabels,ylabels,plot_name=None,title=None):
         plt.savefig(plot_name+'.jpg',dpi=150,bbox_inches='tight')
 
 def pop_percent(i,ntot):
-    sys.stdout.write("\r{:3.1f}%".format(100.*(i+1)/ntot)+ ' complete')
-    sys.stdout.flush()
+    if 100.*(i+1)/ntot<100:
+        sys.stdout.write("\r{:3.1f}%".format(100.*(i+1)/ntot)+ ' complete')
+        sys.stdout.flush()
+    else:
+        sys.stdout.write("\r{:3.1f}%".format(100.*(i+1)/ntot)+ ' completed!')
+        sys.stdout.flush()
+        print('')
