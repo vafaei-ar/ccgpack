@@ -119,6 +119,8 @@ def pop_percent(i,ntot):
     else:
         sys.stdout.write("\r{:3.1f}%".format(100.*(i+1)/ntot)+ ' completed!')
         sys.stdout.flush()
+        
+        
         print('')
         
         
