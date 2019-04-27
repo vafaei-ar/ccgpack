@@ -5,12 +5,23 @@ from __future__ import print_function
 import os
 import sys
 import math
+import pickle
 import pprint
 import random
 import urllib
 import requests
 from time import gmtime, strftime
 
+def save(filename,data):
+    with open(filename+'.pickle', 'wb') as handle:
+        pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+def load(filename):
+    handle = open(filename+'.pickle', 'rb')
+    try:
+        return pickle.load(handle)
+    except:
+        return pickle.load(handle, encoding='latin1')
 
 def connected(url='http://www.google.com/'):
     timeout=5
