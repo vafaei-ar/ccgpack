@@ -8,7 +8,12 @@ import routines as myr
 from skimage import measure
 from sky2face import sky_to_patch,patch_to_sky
 
-def cov_mat(data):
+def cov_mat(datap,standard=True):
+    data = datap+0
+    if standard:
+        data = data-data.mean(axis=0,keepdims=1)
+        data = data/data.std(axis=0,keepdims=1)
+
     if data.shape[0]<2 or data.max()==data.min():
         return np.eye(data.shape[1])
     c_m = np.mean(data,axis=0)
