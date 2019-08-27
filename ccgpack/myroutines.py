@@ -19,19 +19,20 @@ def ccf(m,n_p):
 	return cor
 
 
-def ppcf(m,th,nfmax,rmax):
-	lg = m.shape[0]
-	(npixr,mean,var) = myr.make_standard(m,0)
-	(nf1,fl1) = myr.peak_f(m,th,100)
+#def ppcf(m,th,nfmax,rmax,n_random=None):
+#	lg = m.shape[0]
+#	(npixr,mean,var) = myr.make_standard(m,0)
+#	(nf1,fl1) = myr.peak_f(m,th,100)
 
-	if nf1>nfmax:
-		rlist = np.random.randint(0,nf1,size=nfmax)
-		nf1 = nfmax
-		fl1 = fl1[:,rlist]
-
-	fl1 = fortranize(fl1[:,:nf1])
-	(ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,5*nf1,1,rmax)
-	return ksi
+#	if nf1>nfmax:
+#		rlist = np.random.randint(0,nf1,size=nfmax)
+#		nf1 = nfmax
+#		fl1 = fl1[:,rlist]
+#    if n_random is None:
+#        n_random = 5*nf1
+#	fl1 = fortranize(fl1[:,:nf1])
+#	(ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,n_random,1,rmax)
+#	return ksi
 
 def cccf(m,th,nfmax,rmax):
 	lg = m.shape[0]

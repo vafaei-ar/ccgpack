@@ -57,7 +57,7 @@ def correlarion_fucntion(m1,m2=None,n_p=None,mask_value=np.nan):
     (cor,vcor) = myr.cross_cf(m1,m2,n_p,mask_value)
     return (cor,vcor)
     
-def ppcf(m,th,nfmax,rmax):
+def ppcf(m,th,nfmax,rmax,n_random=None):
     m = fortranize(m)
     lg = m.shape[0]
     (npixr,mean,var) = myr.make_standard(m,0)
@@ -69,9 +69,10 @@ def ppcf(m,th,nfmax,rmax):
         rlist = np.random.randint(0,nf1,size=nfmax)
         nf1 = nfmax
         fl1 = fl1[:,rlist]
-
+    if n_random is None:
+        n_random = 5*nf1
     fl1 = fortranize(fl1[:,:nf1])
-    (ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,5*nf1,1,rmax)
+    (ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,n_random,1,rmax)
     return ksi
     
 #def ffcf(fl1,fl2,lg,1,rmax):
