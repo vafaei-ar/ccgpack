@@ -438,6 +438,90 @@ end do
 end
 
 
+!##############   F-F Correlation Without random list  ##############
+subroutine   ffcfnr(ds,fl1,n_pks1,fl2,n_pks2,rlist,n_sh,ksi,vksi,mth,lng)
+
+implicit none
+
+integer, intent (in) :: n_pks1,n_pks2,n_sh,mth,lng
+Real*8, intent (in) :: ds
+integer, intent (in) :: fl1(2,n_pks1)
+integer, intent (in) :: fl2(2,n_pks2)
+integer, intent (in) :: rlist(2,n_sh)
+Real*8, intent (out) :: ksi(0:lng),vksi(0:lng)
+
+Integer  i,j,k
+Real*8  gam,ran1,ran2
+Real*8 DD(0:lng),DR1(0:lng),DR2(0:lng),RR(0:lng)
+
+ call init_random_seed()
+
+ksi=0; vksi=0
+dd=0; dr1=0; dr2=0; rr=0
+
+!do i=1,n_sh
+!  call random_number(ran1) 
+!  call random_number(ran2)
+!  x_sh(i)=int(ran1*dble(sze)) 
+!  y_sh(i)=int(ran2*dble(sze))
+!end do
+
+do i=1,n_pks1
+  do j=1,n_pks2
+!    if (max(abs(x(i)-x(j)),abs(y(i)-y(j)))>lng )cycle
+    gam=sqrt( real( (fl1(1,i)-fl2(1,j))**2 + (fl1(2,i)-fl2(2,j))**2 ) )
+    k=floor(gam/ds)
+    if (k<=lng) DD(k)=DD(k)+1          
+  enddo
+enddo
+DD=1.*DD/(n_pks1*n_pks2)
+
+do i=1,n_pks1
+  do j=1,n_sh 
+!    if (max(abs(x(i)-x_sh(j)),abs(y(i)-y_sh(j)))>lng )cycle
+    gam=sqrt( real((fl1(1,i)-rlist(1,j))**2 + (fl1(2,i)-rlist(2,j))**2) )
+    k=floor(gam/ds)
+    if (k<=lng) DR1(k)=DR1(k)+1  
+  end do
+end do
+DR1=1.*DR1/(n_pks1*n_sh)
+
+do i=1,n_pks2
+  do j=1,n_sh 
+!    if (max(abs(x(i)-x_sh(j)),abs(y(i)-y_sh(j)))>lng )cycle
+    gam=sqrt( real((fl2(1,i)-rlist(1,j))**2 + (fl2(2,i)-rlist(2,j))**2) )
+    k=floor(gam/ds)
+    if (k<=lng) DR2(k)=DR2(k)+1  
+  end do
+end do
+DR2=1.*DR2/(n_pks2*n_sh)
+
+if (mth==2 .or. mth==3) then
+print*, "This part is out of service for now!"
+!do i=1,n_sh 
+!  do j=i+1,n_sh 
+!    gam=sqrt( real( (x_sh(i)-x_sh(j))**2 + (y_sh(i)-y_sh(j))**2 ) )
+!    k=floor(gam/ds)
+!    if (k<=lng) RR(k)=RR(k)+1  
+!  end do
+!end do
+end if
+
+do k=1, lng 
+  if(DR1(k)+DR2(k).ne.0) then
+if (mth==1) ksi(k)=2.*DD(k)/(DR1(k)+DR2(k))-1
+!if (mth==2) ksi(k)=4.*(DD(k)*RR(k)*1./DR(k)**2)-1.
+!if (mth==3) ksi(k)=(DD(k)*1./RR(k))*(n_sh*1./n_pks)**2-2*(DR(k)*1./RR(k))*(n_sh*1./n_pks) + 3.
+vksi(k)=0
+!    vksi(k)=2.*(n_sh*1./n_pks)*(  ((1.-2*DD(k)/(n_pks*(n_pks-1)))/DR(k))**2 + &
+!	& (DD(k)*(1.-2*DR(k)/n_sh*(n_sh-1))/DR(k)**2)**2  )
+  end if
+end do
+
+end
+
+
+
 
 !##############   RANDOM SEED GERERATOR  ##############
 subroutine init_random_seed()

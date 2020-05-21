@@ -74,6 +74,10 @@ def ppcf(m,th,nfmax,rmax,n_random=None):
     fl1 = fortranize(fl1[:,:nf1])
     (ksi,vksi) = myr.ffcf(1,lg,fl1,fl1,n_random,1,rmax)
     return ksi
+
+def ffcf_no_random(fl1,fl2,rlist,rmax):
+    (ksi,vksi) = myr.ffcfnr(1,fl1,fl2,rlist,1,rmax)
+    return ksi
     
 #def ffcf(fl1,fl2,lg,1,rmax):
 #    fl1 = fortranize(fl1[:,:nf1])
