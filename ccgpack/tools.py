@@ -76,6 +76,7 @@ def ppcf(m,th,nfmax,rmax,n_random=None):
     return ksi
 
 def ffcf_no_random(fl1,fl2,rlist,rmax):
+#    ffcfnr(ds,fl1,n_pks1,fl2,n_pks2,rlist,n_sh,ksi,vksi,mth,lng)
     (ksi,vksi) = myr.ffcfnr(1,fl1,fl2,rlist,1,rmax)
     return ksi
     
@@ -191,9 +192,9 @@ def filters(d,edd_method='sch',R=0,smoothing='g'):
     return d
         
         
-def pdf(m,bins=20):
+def pdf(m,bins=20,normed=None):
     m = np.array(m)
-    hist, bin_edges = np.histogram(m, bins)
+    hist, bin_edges = np.histogram(m, bins, density=normed)
     bins = 0.5*(bin_edges[1:]+bin_edges[:1])
     return bins,hist
     
