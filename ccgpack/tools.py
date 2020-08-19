@@ -195,7 +195,7 @@ def filters(d,edd_method='sch',R=0,smoothing='g'):
 def pdf(m,bins=20,normed=None):
     m = np.array(m)
     hist, bin_edges = np.histogram(m, bins, density=normed)
-    bins = 0.5*(bin_edges[1:]+bin_edges[:1])
+    bins = 0.5*(bin_edges[1:]+bin_edges[:-1])
     return bins,hist
     
 def stat_describe(m,m_max=3):
