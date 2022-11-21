@@ -4,10 +4,12 @@ from __future__ import print_function
 
 import numpy as np
 from skimage.draw import (line, polygon,polygon_perimeter,
-                          circle, circle_perimeter,
                           ellipse, ellipse_perimeter,
-                          bezier_curve)
-
+                          circle_perimeter, bezier_curve)
+try:
+    from skimage.draw import disk as circle
+except:
+    from skimage.draw import circle
 def random_inside(img,num=1,margin=0):
     '''
     This function will return a random positon in an image.
